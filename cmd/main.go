@@ -2,16 +2,18 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"net"
-	"os"
-
 	"gopkg.in/yaml.v2"
+	"log"
+	"os"
 )
+
+type Config struct {
+	Services []Service `yaml:"config"`
+}
 
 type Service struct {
 	Name       string   `yaml:"name"`
-	ListenAddr net.Addr `yaml:"listenAddr"`
+	ListenAddr string   `yaml:"listenAddr"`
 	Algorithm  string   `yaml:"algorithm"`
 	Endpoints  []string `yaml:"endpoints"`
 }
@@ -27,11 +29,12 @@ func main() {
 		log.Panic(err)
 	}
 
-	var s Service
-	err = yaml.Unmarshal(data, &s)
+	var c Config
+	err = yaml.Unmarshal(data, &c)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	log.Print(s)
+	log.Print(c.Services[0])
+	log.Print(c.Services[1])
 }
