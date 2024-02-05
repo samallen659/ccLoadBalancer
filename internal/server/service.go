@@ -4,5 +4,5 @@ type Service struct {
 	Name       string
 	ListenAddr string
 	Algorithm  Algorithm
-	Endpoints  []string
+	Endpoints  []Endpoint
 }
