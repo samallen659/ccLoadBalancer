@@ -6,7 +6,7 @@ import (
 )
 
 type Endpoint struct {
-	Addr    string
+	Addr    *url.URL
 	Proxy   *httputil.ReverseProxy
 	Healthy bool
 }
@@ -20,7 +20,7 @@ func NewEndpoint(addr string) (*Endpoint, error) {
 	proxy := httputil.NewSingleHostReverseProxy(url)
 
 	return &Endpoint{
-		Addr:    addr,
+		Addr:    url,
 		Proxy:   proxy,
 		Healthy: false,
 	}, nil
