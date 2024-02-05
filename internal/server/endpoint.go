@@ -1,6 +1,7 @@
 package server
 
 import (
+	"net/http"
 	"net/http/httputil"
 	"net/url"
 )
@@ -24,4 +25,19 @@ func NewEndpoint(addr string) (*Endpoint, error) {
 		Proxy:   proxy,
 		Healthy: false,
 	}, nil
+}
+
+func (e *Endpoint) CheckHealth() {
+	resp, err := http.Get(e.Addr.Host)
+	if err != nil {
+		e.Healthy = false
+		return
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		e.Healthy = false
+		return
+	}
+
+	e.Healthy = true
 }
