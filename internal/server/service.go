@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 )
 
 type Service interface {
 	Serve() error
+	CheckHealth()
 }
 
 type RoundRobinService struct {
@@ -27,6 +29,8 @@ func NewRoundRobinService(name string, listendAddr string, endpointStrs []string
 		endpoints = append(endpoints, endpoint)
 	}
 
+	log.Printf("Creating RoundRobinService. Name: %s, ListenAddr: %s", name, listendAddr)
+
 	return &RoundRobinService{
 		Name:            name,
 		ListenAddr:      listendAddr,
@@ -36,9 +40,19 @@ func NewRoundRobinService(name string, listendAddr string, endpointStrs []string
 }
 
 func (rrs *RoundRobinService) Serve() error {
+	log.Printf("Listening on: %s", rrs.ListenAddr)
 	return http.ListenAndServe(rrs.ListenAddr, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("roundrobin handler func")
 	}))
+}
+
+func (rrs *RoundRobinService) CheckHealth() {
+	for {
+		for _, e := range rrs.Endpoints {
+			e.CheckHealth()
+		}
+		time.Sleep(10 * time.Second)
+	}
 }
 
 type LeastConnectionService struct {
@@ -57,6 +71,15 @@ func (lcs *LeastConnectionService) Serve() error {
 	return nil
 }
 
+func (lcs *LeastConnectionService) CheckHealth() {
+	for {
+		for _, e := range lcs.Endpoints {
+			e.CheckHealth()
+		}
+		time.Sleep(10 * time.Second)
+	}
+}
+
 type IPHashService struct {
 	Name       string
 	ListenAddr string
@@ -70,4 +93,13 @@ func NewIPHashService(name string, listendAddr string, endpointStrs []string) (*
 func (ihs *IPHashService) Serve() error {
 	log.Print("serving ip hash: " + ihs.Name)
 	return nil
+}
+
+func (ihs *IPHashService) CheckHealth() {
+	for {
+		for _, e := range ihs.Endpoints {
+			e.CheckHealth()
+		}
+		time.Sleep(10 * time.Second)
+	}
 }
