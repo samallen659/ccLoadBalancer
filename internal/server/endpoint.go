@@ -1,6 +1,8 @@
 package server
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -17,6 +19,7 @@ func NewEndpoint(addr string) (*Endpoint, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("Creating Endpoint with url: %s", url.String())
 
 	proxy := httputil.NewSingleHostReverseProxy(url)
 
@@ -28,16 +31,22 @@ func NewEndpoint(addr string) (*Endpoint, error) {
 }
 
 func (e *Endpoint) CheckHealth() {
-	resp, err := http.Get(e.Addr.Host)
+	log.Printf("Checking health for: %s", e.Addr.String())
+	resp, err := http.Get("http://" + e.Addr.String())
 	if err != nil {
+		fmt.Println("first")
+		log.Printf("Health check failed for %s: %v", e.Addr.String(), err)
 		e.Healthy = false
 		return
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		fmt.Println("second")
+		log.Printf("Health check failed for %s: %v", e.Addr.String(), err)
 		e.Healthy = false
 		return
 	}
 
+	log.Printf("Health check passed for: %s", e.Addr.String())
 	e.Healthy = true
 }
