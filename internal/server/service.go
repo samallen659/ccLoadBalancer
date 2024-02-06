@@ -1,9 +1,13 @@
 package server
 
-import "log"
+import (
+	"fmt"
+	"log"
+	"net/http"
+)
 
 type Service interface {
-	Serve()
+	Serve() error
 }
 
 type RoundRobinService struct {
@@ -31,8 +35,10 @@ func NewRoundRobinService(name string, listendAddr string, endpointStrs []string
 	}, nil
 }
 
-func (rrs *RoundRobinService) Serve() {
-	log.Print("serving round robin: " + rrs.Name)
+func (rrs *RoundRobinService) Serve() error {
+	return http.ListenAndServe(rrs.ListenAddr, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("roundrobin handler func")
+	}))
 }
 
 type LeastConnectionService struct {
@@ -46,8 +52,9 @@ func NewLeastConnectionService(name string, listendAddr string, endpointStrs []s
 	return nil, nil
 }
 
-func (lcs *LeastConnectionService) Serve() {
+func (lcs *LeastConnectionService) Serve() error {
 	log.Print("serving least connection: " + lcs.Name)
+	return nil
 }
 
 type IPHashService struct {
@@ -60,6 +67,7 @@ func NewIPHashService(name string, listendAddr string, endpointStrs []string) (*
 	return nil, nil
 }
 
-func (ihs *IPHashService) Serve() {
+func (ihs *IPHashService) Serve() error {
 	log.Print("serving ip hash: " + ihs.Name)
+	return nil
 }
