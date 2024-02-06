@@ -2,11 +2,13 @@ package server
 
 import (
 	"fmt"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type Config struct {
 	Services []struct {
-		Name       string   `yaml:"Name"`
+		Name       string   `yaml:"name"`
 		ListenAddr string   `yaml:"listenAddr"`
 		Algorithm  string   `yaml:"algorithm"`
 		Endpoints  []string `yaml:"endpoints"`
@@ -45,4 +47,17 @@ func NewServer(config Config) (*Server, error) {
 	}
 
 	return &Server{services}, nil
+}
+
+func (s *Server) Serve() error {
+	eg := errgroup.Group{}
+	for _, sv := range s.Services {
+		go sv.CheckHealth()
+		eg.Go(sv.Serve)
+	}
+
+	if err := eg.Wait(); err != nil {
+		return err
+	}
+	return nil
 }
