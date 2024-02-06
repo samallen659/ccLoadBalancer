@@ -42,6 +42,10 @@ type LeastConnectionService struct {
 	Endpoints       []*Endpoint
 }
 
+func NewLeastConnectionService(name string, listendAddr string, endpointStrs []string) (*LeastConnectionService, error) {
+	return nil, nil
+}
+
 func (lcs *LeastConnectionService) Serve() {
 	log.Print("serving least connection: " + lcs.Name)
 }
@@ -50,6 +54,10 @@ type IPHashService struct {
 	Name       string
 	ListenAddr string
 	Endpoints  []*Endpoint
+}
+
+func NewIPHashService(name string, listendAddr string, endpointStrs []string) (*IPHashService, error) {
+	return nil, nil
 }
 
 func (ihs *IPHashService) Serve() {
