@@ -2,21 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/samallen659/ccLoadBalancer/internal/server"
 	"gopkg.in/yaml.v2"
 	"log"
 	"os"
 )
-
-type Config struct {
-	Services []Service `yaml:"config"`
-}
-
-type Service struct {
-	Name       string   `yaml:"name"`
-	ListenAddr string   `yaml:"listenAddr"`
-	Algorithm  string   `yaml:"algorithm"`
-	Endpoints  []string `yaml:"endpoints"`
-}
 
 func main() {
 	dir, err := os.Getwd()
@@ -29,12 +19,19 @@ func main() {
 		log.Panic(err)
 	}
 
-	var c Config
+	var c server.Config
 	err = yaml.Unmarshal(data, &c)
 	if err != nil {
 		log.Panic(err)
 	}
+	fmt.Println(c.Services)
 
-	log.Print(c.Services[0])
-	log.Print(c.Services[1])
+	s, err := server.NewServer(c)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	if err = s.Serve(); err != nil {
+		log.Panic(err)
+	}
 }
