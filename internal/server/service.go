@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"log"
+	"math"
 	"net/http"
 	"time"
 )
@@ -88,8 +89,20 @@ func NewLeastConnectionService(name string, listendAddr string, endpointStrs []s
 }
 
 func (lcs *LeastConnectionService) Serve() error {
-	log.Print("serving least connection: " + lcs.Name)
-	return nil
+	log.Printf("Listening on: %s", lcs.ListenAddr)
+	return http.ListenAndServe(lcs.ListenAddr, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		route, err := lcs.GetRoute()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+			return
+		}
+		lcs.Endpoints[route].Proxy.ServeHTTP(w, r)
+	}))
+}
+
+func (lcs *LeastConnectionService) GetRoute() (int, error) {
+	return 0, nil
 }
 
 func (lcs *LeastConnectionService) CheckHealth() {
