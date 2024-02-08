@@ -3,7 +3,6 @@ package server
 import (
 	"errors"
 	"log"
-	"math"
 	"net/http"
 	"time"
 )
