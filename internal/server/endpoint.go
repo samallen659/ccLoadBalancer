@@ -20,7 +20,13 @@ func NewEndpoint(addr string) (*Endpoint, error) {
 	}
 	log.Printf("Creating Endpoint with url: %s", url.String())
 
-	proxy := httputil.NewSingleHostReverseProxy(url)
+	proxy := &httputil.ReverseProxy{
+		Director: func(req *http.Request) {
+			req.URL.Scheme = "http"
+			req.URL.Host = url.String()
+			req.Host = url.String()
+		},
+	}
 
 	return &Endpoint{
 		Addr:    url,

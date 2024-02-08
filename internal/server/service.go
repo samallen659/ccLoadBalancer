@@ -1,7 +1,7 @@
 package server
 
 import (
-	"fmt"
+	"errors"
 	"log"
 	"net/http"
 	"time"
@@ -42,8 +42,29 @@ func NewRoundRobinService(name string, listendAddr string, endpointStrs []string
 func (rrs *RoundRobinService) Serve() error {
 	log.Printf("Listening on: %s", rrs.ListenAddr)
 	return http.ListenAndServe(rrs.ListenAddr, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("roundrobin handler func")
+		route, err := rrs.GetRoute()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+			return
+		}
+		rrs.Endpoints[route].Proxy.ServeHTTP(w, r)
 	}))
+}
+
+func (rrs *RoundRobinService) GetRoute() (int, error) {
+	for i := 0; i < len(rrs.Endpoints); i++ {
+		route := rrs.RoundRobinCount
+		rrs.RoundRobinCount++
+		if rrs.RoundRobinCount >= len(rrs.Endpoints) {
+			rrs.RoundRobinCount = 0
+		}
+		if rrs.Endpoints[route].Healthy {
+			return route, nil
+		}
+	}
+
+	return 0, errors.New("No healthy endpoints")
 }
 
 func (rrs *RoundRobinService) CheckHealth() {
