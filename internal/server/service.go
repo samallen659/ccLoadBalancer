@@ -85,7 +85,25 @@ type LeastConnectionService struct {
 }
 
 func NewLeastConnectionService(name string, listendAddr string, endpointStrs []string) (*LeastConnectionService, error) {
-	return nil, nil
+	var endpoints []*Endpoint
+	connectionCount := make(map[string]int)
+	for _, endpointStr := range endpointStrs {
+		connectionCount[endpointStr] = 0
+		endpoint, err := NewEndpoint(endpointStr)
+		if err != nil {
+			return nil, err
+		}
+		endpoints = append(endpoints, endpoint)
+	}
+
+	log.Printf("Creating LeastConnectionService. Name: %s, ListenAddr: %s", name, listendAddr)
+
+	return &LeastConnectionService{
+		Name:            name,
+		ListenAddr:      listendAddr,
+		ConnectionCount: connectionCount,
+		Endpoints:       endpoints,
+	}, nil
 }
 
 func (lcs *LeastConnectionService) Serve() error {
