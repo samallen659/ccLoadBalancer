@@ -5,12 +5,15 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"sync"
 )
 
 type Endpoint struct {
-	Addr    *url.URL
-	Proxy   *httputil.ReverseProxy
-	Healthy bool
+	Addr            *url.URL
+	Proxy           *httputil.ReverseProxy
+	Healthy         bool
+	ConnectionCount int
+	mu              sync.Mutex
 }
 
 func NewEndpoint(addr string) (*Endpoint, error) {
@@ -29,9 +32,10 @@ func NewEndpoint(addr string) (*Endpoint, error) {
 	}
 
 	return &Endpoint{
-		Addr:    url,
-		Proxy:   proxy,
-		Healthy: false,
+		Addr:            url,
+		Proxy:           proxy,
+		Healthy:         false,
+		ConnectionCount: 0,
 	}, nil
 }
 
@@ -52,4 +56,16 @@ func (e *Endpoint) CheckHealth() {
 
 	log.Printf("Health check passed for: %s", e.Addr.String())
 	e.Healthy = true
+}
+
+func (e *Endpoint) IncrementConnection() {
+	e.mu.Lock()
+	e.ConnectionCount++
+	e.mu.Unlock()
+}
+
+func (e *Endpoint) DecrementConnection() {
+	e.mu.Lock()
+	e.ConnectionCount--
+	e.mu.Unlock()
 }

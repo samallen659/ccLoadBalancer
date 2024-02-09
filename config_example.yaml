@@ -1,15 +1,19 @@
 #Configuration for ccLoadBalancer
 config: 
   - name: primary
-    listenAddr: http://localhost:8080
+    listenAddr: localhost:8080
     algorithm: roundrobin
     endpoints:
       - localhost:8081
       - localhost:8082
   - name: secondary
-    listenAddr: http://localhost:5000
+    listenAddr: localhost:8000
     algorithm: leastconnection
     endpoints:
-      - localhost:5001
-      - localhost:5002
-      - localhost:5003
+      - localhost:8001
+      - localhost:8002
+  - name: tertiary
+    listenAddr: localhost:8085
+    algorithm: iphash
+    endpoints:
+      - localhost:8003
