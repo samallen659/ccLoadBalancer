@@ -8,13 +8,16 @@ import (
 	"os"
 )
 
+var configFileFlag string
+
 func main() {
+	configFliePath := os.Args[1]
 	dir, err := os.Getwd()
 	if err != nil {
 		log.Panic(err)
 	}
 
-	data, err := os.ReadFile(fmt.Sprintf("%s/config_example.yaml", dir))
+	data, err := os.ReadFile(fmt.Sprintf("%s/%s", dir, configFliePath))
 	if err != nil {
 		log.Panic(err)
 	}
@@ -24,7 +27,6 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
-	fmt.Println(c.Services)
 
 	s, err := server.NewServer(c)
 	if err != nil {
